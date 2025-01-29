@@ -104,6 +104,7 @@ const Courses = ()=>{
             {coursesProf.length > 0 && (
                 <div className="p-6">
                   <h3 className="text-3xl font-bold text-gray-800 mb-6">Cours abonnés</h3>
+
                   {/* Regrouper les cours par type de fichier */}
                   {Object.entries(
                     coursesProf.reduce((acc, cours) => {
@@ -116,6 +117,7 @@ const Courses = ()=>{
                       acc[fileType].push(cours);
                       return acc;
                     }, {})
+                    
                   ).map(([fileType, courses]) => (
                     <div key={fileType} className="mb-8">
                       {/* Sous-titre pour chaque type de fichier */}

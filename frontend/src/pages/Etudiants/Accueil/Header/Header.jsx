@@ -132,7 +132,7 @@ export const Header = () => {
           >{notifications.length}</span>
         </div>
         <div className="profile-header">
-            <Link to={'/dashboard'}>
+            <Link to={'/stud/dashboard'}>
                 <FaUser 
                     size={30} 
                     className="icon text-black"
