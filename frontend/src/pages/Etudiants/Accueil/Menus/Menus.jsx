@@ -1,36 +1,66 @@
-import React from "react";
+
 import { Link } from "react-router-dom";
-import "./Menus.css"
 import { 
     BookOpen,
     Puzzle,
     BookMarked,
     NotebookText
-} from 'lucide-react'
+} from 'lucide-react';
 
-export const Menus = ({setLessons,setExercice}) => {
+export const Menus = () => {
     return (
-        <div className="menus flex flex-col gap-4 items-center mt-8">
-            <Link to={'/courses'}>
-                <div 
-                    className="card btn cursor-pointer flex justify-center items-center py-3 px-4 w-64 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors"
-                ><BookOpen className="mr-3"/>Leçons</div>
-            </Link>
-            <Link to={'/practice'}>
-                <div 
-                    className="card btn cursor-pointer flex justify-center items-center py-3 px-4 w-64 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors"
-                ><Puzzle className="mr-3"/>Pratique</div>
-            </Link>
-            <Link to={'/dictionnary'}>
-                <div 
-                    className="card btn cursor-pointer flex justify-center items-center py-3 px-4 w-64 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors"
-                ><BookMarked className="mr-3"/>Dictionaire</div>
-            </Link>
-            <Link to={'/conjugaison'}>
-                <div 
-                    className="card btn cursor-pointer flex justify-center items-center py-3 px-4 w-64 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors"
-                ><NotebookText className="mr-3"/>Conjugaisons</div>
-            </Link>
+        <div className="flex flex-col items-center justify-center bg-gray-50 p-6">
+            <div className="grid gap-6 w-full max-w-md">
+                <Link to="/courses">
+                    <div className="group relative overflow-hidden rounded-xl bg-white p-6 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105">
+                        <div className="flex items-center space-x-4">
+                            <div className="rounded-lg bg-green-100 p-3 group-hover:bg-green-200 transition-colors">
+                                <BookOpen className="h-6 w-6 text-green-600" />
+                            </div>
+                            <h3 className="text-lg font-semibold text-gray-800">Leçons</h3>
+                        </div>
+                        <div className="absolute inset-0 border-2 border-transparent group-hover:border-green-500 rounded-xl transition-all duration-300" />
+                    </div>
+                </Link>
+
+                <Link to="/practice">
+                    <div className="group relative overflow-hidden rounded-xl bg-white p-6 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105">
+                        <div className="flex items-center space-x-4">
+                            <div className="rounded-lg bg-blue-100 p-3 group-hover:bg-blue-200 transition-colors">
+                                <Puzzle className="h-6 w-6 text-blue-600" />
+                            </div>
+                            <h3 className="text-lg font-semibold text-gray-800">Pratique</h3>
+                        </div>
+                        <div className="absolute inset-0 border-2 border-transparent group-hover:border-blue-500 rounded-xl transition-all duration-300" />
+                    </div>
+                </Link>
+
+                <Link to="/dictionnary">
+                    <div className="group relative overflow-hidden rounded-xl bg-white p-6 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105">
+                        <div className="flex items-center space-x-4">
+                            <div className="rounded-lg bg-purple-100 p-3 group-hover:bg-purple-200 transition-colors">
+                                <BookMarked className="h-6 w-6 text-purple-600" />
+                            </div>
+                            <h3 className="text-lg font-semibold text-gray-800">Dictionnaire</h3>
+                        </div>
+                        <div className="absolute inset-0 border-2 border-transparent group-hover:border-purple-500 rounded-xl transition-all duration-300" />
+                    </div>
+                </Link>
+
+                <Link to="/conjugaison">
+                    <div className="group relative overflow-hidden rounded-xl bg-white p-6 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105">
+                        <div className="flex items-center space-x-4">
+                            <div className="rounded-lg bg-orange-100 p-3 group-hover:bg-orange-200 transition-colors">
+                                <NotebookText className="h-6 w-6 text-orange-600" />
+                            </div>
+                            <h3 className="text-lg font-semibold text-gray-800">Conjugaisons</h3>
+                        </div>
+                        <div className="absolute inset-0 border-2 border-transparent group-hover:border-orange-500 rounded-xl transition-all duration-300" />
+                    </div>
+                </Link>
+            </div>
         </div>
-    )
-}
+    );
+};
+
+export default Menus;

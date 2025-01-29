@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { Link, useParams } from "react-router-dom";
 import { Viewer, Worker } from "@react-pdf-viewer/core";
 import { defaultLayoutPlugin } from "@react-pdf-viewer/default-layout";
 import { pdfjs } from 'react-pdf';
-import { FaFilePdf, FaFileVideo, FaFile } from "react-icons/fa";
+
 
 
 // Import des styles

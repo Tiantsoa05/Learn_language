@@ -4,11 +4,9 @@ import LanguageLearningJourney from "./components/languages/LanguageLearningJour
 import RegisterPage from "./pages/Register";
 import LoginPage from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
-import VideoConference from "./pages/VideoConference";
 import { LeconsSection } from "./components/sections/LeconSection";
 import { LeconsSectionEtudiants } from "./components/etudiants/LeconsSectionEtudiant";
 import CourseList from "./components/etudiants/CoursList";
-import Practice from "./pages/Practice";
 import Accueil from "./pages/Etudiants/Accueil/Accueil";
 import Courses from "./pages/Etudiants/Contenus/Courses/Courses";
 import ChatStudent from "./pages/Etudiants/Chat/ChatStudent";

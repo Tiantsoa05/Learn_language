@@ -1,189 +1,183 @@
+/* eslint-disable react/no-unescaped-entities */
+/* eslint-disable react/prop-types */
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 import {
-    UserPlus,
-    Mail,
-    Lock,
-    UserCircle,
-    GraduationCap,
-    BrainCircuit,
-    Phone,
-  } from "lucide-react";
-  import { Link, useNavigate } from "react-router-dom";
-  import axios from "axios";
-  import { useState, useEffect } from "react";
-  import ConfirmRegister from "../../components/Popup/ConfirmRegister";
-  
-  const LANGUES_MATERNELLES = [
-    "Malagasy",
-    "Français",
-    "Anglais",
-    "Arabe",
-    "Espagnol",
-    "Allemand",
-    "Chinois",
-    "Italien",
-    "Portugais",
-    "Russe",
-    "Autre",
-  ];
-  
-  const ProfRegister = () => {
-    const [nom, setNom] = useState("");
-    const [prenom, setPrenom] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [role] = useState("ENSEIGNANT");
-    const [diplome, setDiplome] = useState("");
-    const [phone, setPhone] = useState("");
-    const [langueEnseigner, setLangueEnseigner] = useState("");
-    const [error, setError] = useState(null);
-    const [registerModal, setRegisterModal] = useState(false);
-    const [langues,setLangues] = useState([])
-    const navigate = useNavigate();
-  
-    useEffect(()=>{
-        axios.get('http://localhost:3000/all/lang').then(response=>{
-            setLangues(response.data)
-        })
-    },[])
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-      setError(null);
-  
-      if (password !== confirmPassword) {
-        setError("Les mots de passe ne correspondent pas.");
-        return;
-      }
-  
+  UserPlus,
+  Mail,
+  Lock,
+  UserCircle,
+  GraduationCap,
+  Phone,
+} from "lucide-react";
+
+const ProfRegister = () => {
+  const [formData, setFormData] = useState({
+    nom: "",
+    prenom: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    role: "ENSEIGNANT",
+    diplome: "",
+    phone: "",
+    langueEnseigner: "",
+  });
+
+  const [error, setError] = useState(null);
+  const [langues, setLangues] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchLangues = async () => {
       try {
-        const response = await axios.post(
-          "http://localhost:3000/auth/prof/register",
-          {
-            nom,
-            prenom,
-            email,
-            password,
-            role,
-            diplome,
-            num_phone: phone,
-            id_langue: parseInt(langueEnseigner)
-          }
-        );
-        localStorage.setItem("token", response.data.token);
-        navigate("/login");
-      } catch (err) {
-        setError(err.response?.data?.message || "Erreur lors de l'inscription.");
-        console.error("Erreur d'inscription :", err);
+        const response = await axios.get("http://localhost:3000/all/lang");
+        setLangues(response.data);
+      } catch (error) {
+        console.error("Erreur lors du chargement des langues:", error);
       }
     };
-  
-    const handleModal = (e) => {
-      e.preventDefault();
-      setRegisterModal(true);
-    };
-  
-    return (
-      <div className="min-h-screen flex">
-        {/* Formulaire */}
-        <div className="w-full lg:w-1/2 flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-blue-300">
-          <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-xl border border-gray-100">
-            <div className="text-center">
-              <UserPlus className="h-12 w-12 text-blue-600 mx-auto" />
-              <h2 className="text-3xl font-extrabold text-gray-900">
-                Créer un Compte
-              </h2>
+    fetchLangues();
+  }, []);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("Les mots de passe ne correspondent pas.");
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const response = await axios.post("http://localhost:3000/auth/prof/register", {
+        nom: formData.nom,
+        prenom: formData.prenom,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role,
+        diplome: formData.diplome,
+        num_phone: formData.phone,
+        id_langue: parseInt(formData.langueEnseigner),
+      });
+
+      localStorage.setItem("token", response.data.token);
+      navigate("/login");
+    } catch (err) {
+      setError(err.response?.data?.message || "Erreur lors de l'inscription.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex bg-blue-300 from-blue-50 to-blue-100">
+      {/* Formulaire Section */}
+      <div className="flex-1 flex items-center justify-center px-6 py-12 lg:px-8">
+        <div className="w-full max-w-xl bg-white p-8 rounded-lg shadow-lg space-y-6">
+          <div className="text-center space-y-4">
+            <UserPlus className="h-12 w-12 text-blue-600 mx-auto" />
+            <h1 className="text-3xl font-bold text-gray-900">
+              Créer un Compte Enseignant
+            </h1>
+          </div>
+
+          {error && (
+            <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+              {error}
             </div>
-  
-            {error && (
-              <div
-                className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
-                role="alert"
-              >
-                {error}
-              </div>
-            )}
-  
-            <form className="space-y-6" onSubmit={handleSubmit}>
-              {/* Nom */}
-              <InputField
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <FormField
                 label="Nom"
-                value={nom}
-                onChange={(e) => setNom(e.target.value)}
+                name="nom"
+                value={formData.nom}
+                onChange={handleChange}
                 icon={UserCircle}
-                placeholder="Votre nom"
+                required
               />
-  
-              {/* Prénom */}
-              <InputField
+              <FormField
                 label="Prénom"
-                value={prenom}
-                onChange={(e) => setPrenom(e.target.value)}
+                name="prenom"
+                value={formData.prenom}
+                onChange={handleChange}
                 icon={UserCircle}
-                placeholder="Votre prénom"
+                required
               />
-  
-              {/* Email */}
-              <InputField
-                label="Adresse Email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                icon={Mail}
-                placeholder="votre.email@example.com"
-              />
-  
-              {/* Diplôme */}
-              <InputField
+            </div>
+
+            <FormField
+              label="Email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              icon={Mail}
+              required
+            />
+
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <FormField
                 label="Diplôme"
-                value={diplome}
-                onChange={(e) => setDiplome(e.target.value)}
+                name="diplome"
+                value={formData.diplome}
+                onChange={handleChange}
                 icon={GraduationCap}
-                placeholder="Votre diplôme"
+                required
               />
-  
-              {/* Niveau d'études */}
-              <InputField
-                label="Numero téléphone"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+              <FormField
+                label="Téléphone"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
                 icon={Phone}
-                placeholder="Votre niveau d'études"
+                required
               />
-  
-              {/* Mot de passe */}
-              <InputField
-                label="Mot de Passe"
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <FormField
+                label="Mot de passe"
+                name="password"
                 type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={formData.password}
+                onChange={handleChange}
                 icon={Lock}
-                placeholder="Votre mot de passe"
+                required
               />
-  
-              {/* Confirmation mot de passe */}
-              <InputField
-                label="Confirmer le mot de Passe"
+              <FormField
+                label="Confirmer le mot de passe"
+                name="confirmPassword"
                 type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                value={formData.confirmPassword}
+                onChange={handleChange}
                 icon={Lock}
-                placeholder="Confirmez votre mot de passe"
+                required
               />
-  
-              {/* Langue enseignée */}
-              <div>
-                <label
-                  htmlFor="langueEnseigner"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Langue à enseigner
-                </label>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Langue à enseigner
+              </label>
+              <div className="relative">
                 <select
-                  id="langueEnseigner"
                   name="langueEnseigner"
-                  value={langueEnseigner}
-                  onChange={(e) => setLangueEnseigner(e.target.value)}
-                  className="pl-3 block w-full py-2 mt-1 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  value={formData.langueEnseigner}
+                  onChange={handleChange}
+                  className="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-md"
+                  required
                 >
                   <option value="">Sélectionnez une langue</option>
                   {langues.map((langue) => (
@@ -193,81 +187,73 @@ import {
                   ))}
                 </select>
               </div>
-  
-              {/* Bouton inscription */}
-              <button
-                type="submit"
-                className="w-full py-2 px-4 bg-blue-600 text-white rounded-md shadow-md hover:bg-blue-700 focus:outline-none"
-              >
-                S'inscrire
-              </button>
-            </form>
-  
-            {/* Lien vers connexion */}
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {isLoading ? "Inscription en cours..." : "S'inscrire"}
+            </button>
+
             <p className="text-center text-sm text-gray-600">
               Déjà un compte ?{" "}
-              <Link
-                to="/login"
-                className="font-medium text-blue-600 hover:text-blue-500"
-              >
+              <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500">
                 Connectez-vous
               </Link>
             </p>
+          </form>
+        </div>
+      </div>
+
+      {/* Image Section */}
+      <div className="hidden lg:block w-1/2 relative">
+        <div className="absolute inset-0">
+          <img
+            src="/images/profregister.jpg"
+            alt="Illustration"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-8">
+            <div className="max-w-md mx-auto text-center text-white">
+              <h2 className="text-3xl font-bold mb-4">
+                Rejoignez notre communauté d'apprentissage
+              </h2>
+              <p className="text-lg">
+                Partagez vos compétences avec Infinity
+              </p>
+            </div>
           </div>
         </div>
-  
-        {/* Illustration */}
-        <IllustrationSection />
-  
-        {/* Modal confirmation inscription */}
-        {registerModal && (
-          <ConfirmRegister
-            closeRegisterModal={() => setRegisterModal(false)}
-            handleRegister={handleSubmit}
-          />
-        )}
       </div>
-    );
-  };
-  
-  export default ProfRegister;
-  
-  // Composant de champ d'entrée
-  const InputField = ({ label, type = "text", value, onChange, icon: Icon, placeholder }) => (
-    <div>
-      <label className="block text-sm font-medium text-gray-700">{label}</label>
-      <div className="mt-1 relative rounded-md shadow-sm">
-        {Icon && (
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Icon className="h-5 w-5 text-gray-400" />
-          </div>
-        )}
+    </div>
+  );
+};
+
+// Composant FormField réutilisable
+const FormField = ({ label, name, type = "text", value, onChange, icon: Icon, required }) => {
+  return (
+    <div className="space-y-2">
+      <label htmlFor={name} className="block text-sm font-medium text-gray-700">
+        {label}
+      </label>
+      <div className="relative">
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+          <Icon className="h-5 w-5" />
+        </div>
         <input
+          id={name}
+          name={name}
           type={type}
           value={value}
           onChange={onChange}
-          placeholder={placeholder}
-          className={`pl-10 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+          required={required}
+          className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
         />
       </div>
     </div>
   );
-  
-  // Section Illustration
-  const IllustrationSection = () => (
-    <div className="hidden lg:block lg:w-1/2 bg-blue-50 relative">
-      <div className="absolute inset-0 flex items-center justify-center">
-        <img
-          src="/images/profregister.jpg"
-          alt="Illustration"
-          className="w-full h-full object-cover"
-        />
-      </div>
-      <div className="absolute bottom-6 left-0 right-0 p-8 text-center bg-white/70">
-        <h3 className="text-2xl font-bold text-blue-800 mb-4">
-          Rejoignez notre communauté d'apprentissage
-        </h3>
-        <p className="text-blue-600">Partagez vos compétences avec Infinity</p>
-      </div>
-    </div>
-);
+};
+
+export default ProfRegister;
