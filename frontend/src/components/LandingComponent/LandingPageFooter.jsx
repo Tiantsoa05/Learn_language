@@ -27,7 +27,7 @@ import {
             <div>
               <h4 className="text-lg font-semibold mb-4">Liens Rapides</h4>
               <ul className="space-y-2">
-                {['Accueil', 'Fonctionnalités', 'Tarifs', 'Témoignages'].map((link) => (
+                {['Accueil', 'Fonctionnalités'].map((link) => (
                   <li key={link}>
                     <a href={`#${link.toLowerCase()}`} className="text-gray-300 hover:text-white">
                       {link}

@@ -126,28 +126,6 @@ export const Header = () => {
                 size={20} 
                 className="text-gray-700 hover:text-blue-600 transition-colors"
               />
-<<<<<<< HEAD
-=======
-            </div>
-        }
-         
-          {
-            showNotification && 
-            <div ref={notificationRef} className="absolute top-12 right-0 z-10">
-              <Notifications/>
-            </div>
-          }
-          <span className="absolute top-1/2 right-0 -translate-y-1/2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
-          >{notifications.length}</span>
-        </div>
-        <div className="profile-header">
-            <Link to={'/stud/dashboard'}>
-                <FaUser 
-                    size={30} 
-                    className="icon text-black"
-                    color="#000"
-                />
->>>>>>> 1c47459dcd912f68fb4f3e4a7bea73ca769a1572
             </Link>
 
             {/* Logout Button */}
