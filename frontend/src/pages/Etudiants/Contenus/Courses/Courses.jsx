@@ -79,11 +79,11 @@ const Courses = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
       <Header />
       <Banner />
       
-      <div className="max-w-7xl mx-auto px-4 py-12">
+      <div className="max-w-7xl mx-auto px-4 py-12 overflow-hidden">
         {/* Navigation et Filtres */}
         <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
           <div className="flex flex-col md:flex-row gap-4 justify-between items-center mb-6">
