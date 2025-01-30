@@ -11,8 +11,18 @@ import {
   Globe,
   Calendar,
 } from 'lucide-react';
-import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay } from 'date-fns';
+import { 
+  format, 
+  addMonths, 
+  subMonths, 
+  startOfMonth, 
+  endOfMonth, 
+  eachDayOfInterval, 
+  isSameMonth, 
+  isSameDay 
+} from 'date-fns';
 import { fr } from 'date-fns/locale';
+import axios from 'axios';
 
 const CalendarSection = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -23,6 +33,7 @@ const CalendarSection = () => {
   const [events, setEvents] = useState([]);
   const [editingEvent, setEditingEvent] = useState(null);
   const [isHovering, setIsHovering] = useState(false);
+  const [dataEvent,setDataEvent] = useState([])
   const [newEvent, setNewEvent] = useState({
     id: '',
     title: '',
@@ -36,11 +47,15 @@ const CalendarSection = () => {
     type: 'live'
   });
 
+  const profId = parseInt(localStorage.getItem('userId'))
+
   useEffect(() => {
     const savedEvents = localStorage.getItem('languageCalendarEvents');
     if (savedEvents) {
       setEvents(JSON.parse(savedEvents));
     }
+
+    fetchPrograms();
 
     // Add click event listener to handle clicking outside
     const handleClickOutside = (event) => {
@@ -55,29 +70,68 @@ const CalendarSection = () => {
     };
   }, []);
 
-  const saveEvent = (e) => {
+  const saveEvent = async(e) => {
     e.preventDefault();
-    let updatedEvents;
+    let updatedEvents
     
     if (editingEvent) {
+
       updatedEvents = events.map(event => 
         event.id === editingEvent.id ? { ...newEvent, id: editingEvent.id } : event
       );
+
+      // let editId = await dataEvent.find(event=>event.tache===editingEvent.title)
+      // console.log(editId.id_prog)
+      // Mettre à jour le programme dans la base de données
+      axios.post(`http://localhost:3000/agenda/set/${editingEvent.id}`, 
+      {
+        tache: newEvent.title,
+        date_tache: new Date(`${newEvent.date}T${newEvent.startTime}`)
+      }).then(res=>{
+        console.log(res.data)
+
+       
+
+      }).catch(console.log)
+
     } else {
-      const eventId = Date.now().toString();
-      updatedEvents = [...events, { ...newEvent, id: eventId }];
+
+      let eventId
+     
+
+      console.log({newEvent})
+
+      axios.post('http://localhost:3000/agenda/new',{
+        id_prof: profId,
+        tache: newEvent.title,
+        date_tache: new Date(`${newEvent.date}T${newEvent.startTime}`)
+      }).then(res=>{
+        let {newProgram} = res.data
+        console.log(newProgram,updatedEvents)
+        
+        eventId = newProgram.id_prog.toString()
+        
+        updatedEvents = [...events, { ...newEvent ,id: eventId}];
+        
+      }).catch(console.log)
     }
-    
+
     setEvents(updatedEvents);
     localStorage.setItem('languageCalendarEvents', JSON.stringify(updatedEvents));
     closeModal();
+    
   };
 
-  const deleteEvent = (eventId) => {
+  const deleteEvent = async (eventId) => {
     const updatedEvents = events.filter(event => event.id !== eventId);
     setEvents(updatedEvents);
     localStorage.setItem('languageCalendarEvents', JSON.stringify(updatedEvents));
     setShowEventDetails(false);
+
+    console.log(eventId)
+    // Supprimer le programme de la base de données
+    const response = await axios.delete(`http://localhost:3000/agenda/delete/${eventId}`);
+    console.log(response.data)
   };
 
   const updateEventStatus = (eventId, newStatus) => {
@@ -173,9 +227,33 @@ const CalendarSection = () => {
     return translations[type] || type;
   };
 
+
+  const fetchPrograms = async () => {
+    try {
+      const response = await axios.get('http://localhost:3000/agenda/programs/'+profId)
+      const programs = response.data.map(program => ({
+        id: program.id_prog.toString(),
+        title: program.tache,
+        date: format(new Date(program.date_tache), 'yyyy-MM-dd'),
+        startTime: format(new Date(program.date_tache), 'HH:mm'),
+        endTime: '', 
+        language: 'french', 
+        level: 'beginner', 
+        description: '', 
+        status: 'upcoming', 
+        type: 'live' 
+      }));
+
+      setEvents([...programs]);
+
+    } catch (error) {
+      console.error('Erreur lors de la récupération des programmes:', error);
+    }
+  };
+
   return (
     <div className="h-full bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-xl">
-      <div className="h-full bg-white/80 backdrop-blur rounded-xl shadow-xl">
+      <div className="p-10 bg-white/80 backdrop-blur rounded-xl shadow-xl">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
           <div className="flex items-center gap-2">
@@ -269,6 +347,7 @@ const CalendarSection = () => {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
+                            console.log(event)
                             deleteEvent(event.id);
                           }}
                           className="p-1 hover:bg-white/20 rounded transition-colors"
@@ -291,7 +370,7 @@ const CalendarSection = () => {
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
             <div className="flex items-center justify-between border-b p-4">
               <h3 className="text-lg font-bold">
-                {editingEvent ? 'Modifier le cours' : 'Nouveau cours'}
+                {editingEvent ? 'Modifier le programme' : 'Nouveau programme'}
               </h3>
               <button
                 onClick={closeModal}
@@ -304,19 +383,19 @@ const CalendarSection = () => {
             <form onSubmit={saveEvent} className="p-4 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Titre du cours
+                  Programme à faire
                 </label>
                 <input
                   type="text"
                   className="w-full p-2 border rounded focus:ring-2 focus:ring-indigo-600 outline-none"
                   value={newEvent.title}
                   onChange={(e) => setNewEvent({...newEvent, title: e.target.value})}
-                  placeholder="Ex: Conversation en anglais"
+                  placeholder="Ex: Nouvelle leçon"
                   required
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              {/* <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Langue
@@ -332,7 +411,7 @@ const CalendarSection = () => {
                     <option value="german">Allemand</option>
                   </select>
                 </div>
-                <div>
+                {/* <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Niveau
                   </label>
@@ -345,8 +424,8 @@ const CalendarSection = () => {
                     <option value="intermediate">Intermédiaire</option>
                     <option value="advanced">Avancé</option>
                   </select>
-                </div>
-              </div>
+                </div> 
+              </div> */}
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -361,26 +440,10 @@ const CalendarSection = () => {
                     required
                   />
                 </div>
+                {/* Heure */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Type
-                  </label>
-                  <select
-                    className="w-full p-2 border rounded focus:ring-2 focus:ring-indigo-600 outline-none"
-                    value={newEvent.type}
-                    onChange={(e) => setNewEvent({...newEvent, type: e.target.value})}
-                  >
-                    <option value="live">Cours en direct</option>
-                    <option value="recorded">Cours enregistré</option>
-                    <option value="practice">Session pratique</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Début
+                    Heure
                   </label>
                   <input
                     type="time"
@@ -390,33 +453,7 @@ const CalendarSection = () => {
                     required
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Fin
-                  </label>
-                  <input
-                    type="time"
-                    className="w-full p-2 border rounded focus:ring-2 focus:ring-indigo-600 outline-none"
-                    value={newEvent.endTime}
-                    onChange={(e) => setNewEvent({...newEvent, endTime: e.target.value})}
-                    required
-                  />
-                </div>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Description
-                </label>
-                <textarea
-                  className="w-full p-2 border rounded focus:ring-2 focus:ring-indigo-600 outline-none"
-                  value={newEvent.description}
-                  onChange={(e) => setNewEvent({...newEvent, description: e.target.value})}
-                  placeholder="Description du cours"
-                  rows="3"
-                />
-              </div>
-
               {editingEvent && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -439,7 +476,7 @@ const CalendarSection = () => {
                 type="submit"
                 className="w-full p-2.5 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded hover:from-indigo-700 hover:to-indigo-800 transition-all font-medium"
               >
-                {editingEvent ? 'Modifier le cours' : 'Créer le cours'}
+                {editingEvent ? 'Modifier le programme' : 'Créer le programme'}
               </button>
             </form>
           </div>

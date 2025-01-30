@@ -6,7 +6,7 @@ const Pratique = () => {
     const [langue, setLangue] = useState('')
 
     const traduire = () => {
-        fetch("http://102.17.194.7:3000/practice/trad",
+        fetch("http://localhost:3000/practice/trad",
             {
                 method: 'POST',
                 headers: {

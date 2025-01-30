@@ -11,39 +11,112 @@ import {
   ChevronDown,
   Bell
 } from 'lucide-react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { LANGUAGES } from '../../constants/Languages';
 
-const Navbar = ({ currentLanguage = null, userProfile = null, onLogout }) => {
+const Navbar = () => {
+
+  const [userProfile,setUserProfile] = useState({})
+  const navigate = useNavigate()
+  const [isLogoutModalOpen,setIsLogoutModalOpen] = useState(false)
+
+  const [currentLanguage,setCurrenLanguage]=useState({})
+
+
+  useEffect(()=>{
+    axios.get('http://localhost:3000/all/lang')
+    .then(resp=>{
+
+      let l = (LANGUAGES.find(language =>
+        resp.data.some(dbLang => dbLang.nom_langue === language.name)
+      ))
+      console.log(l)
+      setCurrenLanguage(l)
+
+    })
+  })
+
+  useEffect(()=>{
+    const userId = localStorage.getItem("userId")
+    axios.get('http://localhost:3000/all/profs').then(res=>{
+      let actualUser = res.data.find(user=>user.id_prof===parseInt(userId))
+      setUserProfile(actualUser)
+
+      console.log(actualUser)
+    })
+
+  },[])
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const menuItems = [
-    {
-      label: "Mes Cours",
-      icon: BookOpen,
-      dropdownItems: [
-        { label: "Cours en cours", href: "#" },
-        { label: "Cours terminés", href: "#" },
-        { label: "Favoris", href: "#" }
-      ]
-    },
-    {
-      label: "Langue",
-      icon: Globe,
-      dropdownItems: [
-        { label: "Français", href: "#" },
-        { label: "English", href: "#" },
-        { label: "Español", href: "#" }
-      ]
-    },
-    {
-      label: "Paramètres",
-      icon: Settings,
-      dropdownItems: [
-        { label: "Profile", href: "#" },
-        { label: "Notifications", href: "#" },
-        { label: "Sécurité", href: "#" }
-      ]
-    }
+    // {
+    //   label: "Mes Cours",
+    //   icon: BookOpen,
+    //   dropdownItems: [
+    //     { label: "Cours en cours", href: "#" },
+    //     { label: "Cours terminés", href: "#" },
+    //     { label: "Favoris", href: "#" }
+    //   ]
+    // },
+    // {
+    //   label: "Langue",
+    //   icon: Globe,
+    //   dropdownItems: [
+    //     { label: "Français", href: "#" },
+    //     { label: "English", href: "#" },
+    //     { label: "Español", href: "#" }
+    //   ]
+    // },
+    // {
+    //   label: "Paramètres",
+    //   icon: Settings,
+    //   dropdownItems: [
+    //     { label: "Profile", href: "#" },
+    //     { label: "Notifications", href: "#" },
+    //     { label: "Sécurité", href: "#" }
+    //   ]
+    // }
   ];
+
+  const onLogout = ()=>{
+    setIsLogoutModalOpen(true)
+  }
+  const closeLogoutModal=()=>{
+    setIsLogoutModalOpen(false)
+  }
+
+  const LogoutModal = ({closeLogoutModal})=>{
+
+    const handleLogout = ()=>{
+      localStorage.clear()
+      navigate('/')
+    }
+
+    return <>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-md shadow-lg max-w-sm w-full">
+            <h2 className="text-lg font-bold text-gray-800">Confirmer la déconnexion</h2>
+            <p className="text-gray-600 mt-2">Êtes-vous sûr de vouloir vous déconnecter ?</p>
+            <div className="flex justify-end space-x-4 mt-4">
+              <button
+                onClick={closeLogoutModal}
+                className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+              >
+                Déconnexion
+              </button>
+            </div>
+          </div>
+        </div>
+    </>
+  }
 
   const DropdownMenu = ({ items, label, icon: Icon }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -103,7 +176,8 @@ const Navbar = ({ currentLanguage = null, userProfile = null, onLogout }) => {
                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
                 onClick={(e) => {
                   if (!item.href || item.href === '#') {
-                    e.preventDefault();
+                    e.preventDefault()
+                    console.log(item)
                   }
                 }}
               >
@@ -160,7 +234,7 @@ const Navbar = ({ currentLanguage = null, userProfile = null, onLogout }) => {
           />
           <div className="flex flex-col">
             <span className="text-sm font-medium text-gray-700">
-              {userProfile.name}
+              {userProfile.nom_prof}
             </span>
           </div>
           <ChevronDown 
@@ -176,19 +250,14 @@ const Navbar = ({ currentLanguage = null, userProfile = null, onLogout }) => {
             onMouseLeave={handleMouseLeave}
           >
             <div className="px-4 py-2 border-b">
-              <p className="text-sm font-medium text-gray-700">{userProfile.name}</p>
-              <p className="text-xs text-gray-500">{userProfile.email}</p>
+              <p className="text-sm font-medium text-gray-700">{userProfile.nom_prof}</p>
+              <p className="text-xs text-gray-500">{userProfile.mail_prof}</p>
             </div>
-            <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-              Mon Profil
-            </a>
-            <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-              Mes Préférences
-            </a>
             <button
               onClick={onLogout}
-              className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700"
+              className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 flex gap-2"
             >
+              <LogOut size={20}/>
               Se déconnecter
             </button>
           </div>
@@ -197,6 +266,76 @@ const Navbar = ({ currentLanguage = null, userProfile = null, onLogout }) => {
     );
   };
 
+  const NotifMenu = () => {
+    const [isOpen, setIsOpen] = useState(false);
+    const menuRef = useRef(null);
+    let timeoutId = null;
+
+    useEffect(() => {
+      return () => {
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+      };
+    }, []);
+
+    const handleMouseEnter = () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      setIsOpen(true);
+    };
+
+    const handleMouseLeave = () => {
+      timeoutId = setTimeout(() => {
+        setIsOpen(false);
+      }, 150);
+    };
+
+    return (
+      <div 
+        ref={menuRef}
+        className="relative"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        <button 
+          className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors relative"
+        >
+          <Bell size={20} />
+          <span 
+            className="absolute top-0 right-0 h-4 w-4 bg-red-500 rounded-full text-xs text-white flex items-center justify-center"
+          >
+            3
+          </span>
+        </button>
+
+        {isOpen && (
+          <div 
+            className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg py-1 border border-gray-100"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          >
+            <div className="w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-red-50 hover:text-red-700 flex gap-2">
+              Notif
+            </div>
+            <div className="w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-red-50 hover:text-red-700 flex gap-2">
+              Notif
+            </div>
+            <div className="w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-red-50 hover:text-red-700 flex gap-2">
+              Notif
+            </div>
+            <div className="w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-red-50 hover:text-red-700 flex gap-2">
+              Notif
+            </div>
+            <div className="w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-red-50 hover:text-red-700 flex gap-2">
+              Notif
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
   return (
     <nav className="bg-white shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -226,16 +365,14 @@ const Navbar = ({ currentLanguage = null, userProfile = null, onLogout }) => {
             </div>
 
             {/* Notifications */}
-            <button className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors relative">
-              <Bell size={20} />
-              <span className="absolute top-0 right-0 h-4 w-4 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">
-                3
-              </span>
-            </button>
-
+              <NotifMenu/>
+              
             {/* User Profile */}
             {userProfile && (
-              <UserMenu userProfile={userProfile} onLogout={onLogout} />
+              <UserMenu 
+                userProfile={userProfile} 
+                onLogout={onLogout} 
+              />
             )}
           </div>
 
@@ -250,7 +387,9 @@ const Navbar = ({ currentLanguage = null, userProfile = null, onLogout }) => {
           </div>
         </div>
       </div>
-
+      {isLogoutModalOpen && (
+        <LogoutModal closeLogoutModal={closeLogoutModal}/>
+      )}
       {/* Mobile menu */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-white border-t">
@@ -284,8 +423,8 @@ const Navbar = ({ currentLanguage = null, userProfile = null, onLogout }) => {
                     className="h-8 w-8 rounded-full border-2 border-blue-500"
                   />
                   <div className="ml-3">
-                    <div className="text-sm font-medium text-gray-700">{userProfile.name}</div>
-                    <div className="text-xs text-gray-500">{userProfile.email}</div>
+                    <div className="text-sm font-medium text-gray-700">{userProfile.nom_prof}</div>
+                    <div className="text-xs text-gray-500">{userProfile.mail_prof}</div>
                   </div>
                 </div>
                 <button
